@@ -37,7 +37,8 @@ define([
   'views/cookies_disabled',
   'views/clear_storage',
   'views/unexpected_error',
-  'views/permissions'
+  'views/permissions',
+  'views/openid'
 ],
 function (
   _,
@@ -74,7 +75,8 @@ function (
   CookiesDisabledView,
   ClearStorageView,
   UnexpectedErrorView,
-  PermissionsView
+  PermissionsView,
+  OpenIdView
 ) {
   'use strict';
 
@@ -122,7 +124,8 @@ function (
       'unexpected_error(/)': showView(UnexpectedErrorView),
       'confirm_account_unlock(/)': showView(ConfirmAccountUnlockView),
       'complete_unlock_account(/)': showView(CompleteAccountUnlockView),
-      'account_unlock_complete(/)': showView(ReadyView, { type: 'account_unlock' })
+      'account_unlock_complete(/)': showView(ReadyView, { type: 'account_unlock' }),
+      'openid(/)': showView(OpenIdView)
     },
 
     initialize: function (options) {
