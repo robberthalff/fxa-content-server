@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <div id="display-name" class="settings-unit">
   <div class="success">Hello</div>
   <div class="error"></div>
@@ -22,4 +23,52 @@
         <button class="settings-button secondary cancel">{{#t}}Cancel{{/t}}</button>
       </div>
   </div>
+=======
+<div id="main-content" class="card">
+  <header>
+    <h1 id="fxa-change-password-header">{{#t}}Change password{{/t}}</h1>
+  </header>
+
+  <section>
+    <div class="error"></div>
+    <div class="success"></div>
+
+    <form novalidate>
+      <p>
+        {{#t}}Once you're finished, use your new password to sign in on all of your devices.{{/t}}
+      </p>
+      <div class="input-row password-row">
+        <label class="label-helper"></label>
+        <input type="password" class="password" id="old_password" placeholder="{{#t}}Old password{{/t}}" pattern=".{8,}" autofocus required {{#isPasswordAutoCompleteDisabled}}autocomplete="off"{{/isPasswordAutoCompleteDisabled}} />
+
+        <input id="show-old-password" type="checkbox" class="show-password" aria-controls="old_password" tabindex="-1" data-novalue />
+        <label for="show-old-password" class="show-password-label">
+          {{#t}}Show{{/t}}
+        </label>
+      </div>
+
+      <div class="input-row password-row">
+        <label class="label-helper"></label>
+        <input type="password" class="password tooltip-below" id="new_password" placeholder="{{#t}}New password{{/t}}" pattern=".{8,}" required {{#isPasswordAutoCompleteDisabled}}autocomplete="off"{{/isPasswordAutoCompleteDisabled}} />
+
+        <input id="show-new-password" type="checkbox" class="show-password" aria-controls="new_password" tabindex="-1" data-novalue />
+        <label for="show-new-password" class="show-password-label">
+          {{#t}}Show{{/t}}
+        </label>
+
+        <div class="input-help">{{#t}}Must be at least 8 characters{{/t}}</div>
+      </div>
+
+      <div class="button-row">
+        <button type="submit" class="disabled">{{#t}}Confirm{{/t}}</button>
+      </div>
+    </form>
+
+    {{#canGoBack}}
+      <div class="links">
+        <a id="back" href="#">{{#t}}Back{{/t}}</a>
+      </div>
+    {{/canGoBack}}
+  </section>
+>>>>>>> wip
 </div>

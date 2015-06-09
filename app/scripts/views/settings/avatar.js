@@ -16,6 +16,14 @@ function (Cocktail, FormView, Template, AvatarMixin, SettingsMixin) {
     template: Template,
     className: 'avatar',
 
+    events: {
+      'click button': '_goToAvatarChange'
+    },
+
+    _goToAvatarChange: function () {
+      this.navigate('/settings/avatar/change');
+    },
+
     afterVisible: function () {
       FormView.prototype.afterVisible.call(this);
       return this.displayAccountProfileImage(this.getSignedInAccount());

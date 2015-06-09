@@ -10,12 +10,36 @@ define([
   'views/form',
   'views/base',
   'views/mixins/avatar-mixin',
+  'views/settings/avatar',
+  'views/settings/avatar_change',
+  'views/settings/avatar_crop',
+  'views/settings/avatar_camera',
+  'views/settings/communication_preferences',
+  'views/change_password',
+  'views/settings/display_name',
+  'views/delete_account',
   'views/mixins/settings-mixin',
   'stache!templates/settings'
 ],
 function (Cocktail, Session, FormView, BaseView, AvatarMixin,
-  SettingsMixin, Template) {
+  AvatarView, AvatarChangeView, AvatarCropView, AvatarCameraView, CommunicationPreferencesView,
+  ChangePasswordView, DisplayNameView, DeleteAccountView, SettingsMixin, Template) {
   var t = BaseView.t;
+
+  var SUBVIEWS = [
+    AvatarView,
+    //CommunicationPreferencesView,
+    ChangePasswordView,
+    //DisplayNameView,
+    DeleteAccountView
+  ];
+
+  // Avatar views are stateful so they require special handling
+  var AVATAR_VIEWS = [
+    AvatarChangeView,
+    AvatarCropView,
+    AvatarCameraView
+  ];
 
   var View = FormView.extend({
     template: Template,
@@ -25,14 +49,15 @@ function (Cocktail, Session, FormView, BaseView, AvatarMixin,
       options = options || {};
 
       this._able = options.able;
+      this._subViewToShow = options.subView;
     },
 
     context: function () {
       var account = this.getSignedInAccount();
-      var email = account.get('email');
 
       return {
-        email: email,
+        email: account.get('email'),
+        displayName: account.get('displayName'),
         showSignOut: !account.isFromSync(),
         communicationPrefsVisible: this._areCommunicationPrefsVisible()
       };
@@ -40,7 +65,80 @@ function (Cocktail, Session, FormView, BaseView, AvatarMixin,
 
     events: {
       // validateAndSubmit is used to prevent multiple concurrent submissions.
-      'click #signout': BaseView.preventDefaultThen('validateAndSubmit')
+      //'click #signout': BaseView.preventDefaultThen('validateAndSubmit')
+    },
+
+    showSubView: function (SubView, options) {
+      if (SUBVIEWS.indexOf(SubView) === -1 && AVATAR_VIEWS.indexOf(SubView) === -1) {
+        return;
+      }
+
+      var self = this;
+      console.log('show!', self._subViewClass(SubView));
+
+      self._closeSubViews();
+
+      // Avatar views depend on state so we have to render them on-demand.
+      if (self._isAvatarView(SubView)) {
+        self._renderSubView(SubView, options);
+      }
+
+      self.$('.' + self._subViewClass(SubView)).addClass('open');
+
+      // TODO log screen here?
+    },
+
+    _closeSubViews: function () {
+      var self = this;
+
+      SUBVIEWS.forEach(function (subView) {
+        var selector = '.' + self._subViewClass(subView);
+        if (self.$(selector).hasClass('open')) {
+          self.$(selector).removeClass('open');
+        }
+      });
+
+      // Destroy any previous avatar view
+      if (self._avatarView) {
+        console.log('destroy!!');
+        self._avatarView.destroy(true);
+      }
+    },
+
+    _subViewClass: function (SubView) {
+      return SubView.prototype.className;
+    },
+
+    _isAvatarView: function (SubView) {
+      return (AVATAR_VIEWS.indexOf(SubView) !== -1);
+    },
+
+    _renderSubView: function (SubView) {
+      var self = this;
+      var className = self._subViewClass(SubView);
+      var selector = '.' + className;
+
+      self.$('#subviews').append('<div class="' + className + '"></div>');
+
+      var view = self.router.createView(SubView, {
+        el: self.$(selector),
+        superView: View
+      });
+
+      if (self._isAvatarView(SubView)) {
+        self._avatarView = view;
+        self.$(selector).addClass('avatar-view');
+      }
+
+      self.trackSubview(view);
+
+      return view.render()
+        .then(function (shown) {
+          if (! shown) {
+            return;
+          }
+          view.afterVisible();
+        });
     },
 
     beforeRender: function () {
@@ -51,8 +149,18 @@ function (Cocktail, Session, FormView, BaseView, AvatarMixin,
     },
 
     afterRender: function () {
-      this.logScreenEvent('communication-prefs-link.visible.' +
-          String(this._areCommunicationPrefsVisible()));
+      var self = this;
+
+      self.logScreenEvent('communication-prefs-link.visible.' +
+          String(self._areCommunicationPrefsVisible()));
+
+      SUBVIEWS.forEach(function (SubView) {
+        self._renderSubView(SubView);
+      });
+
+      if (self._subViewToShow) {
+        self.showSubView(self._subViewToShow);
+      }
     },
 
     submit: function () {
@@ -82,7 +190,7 @@ function (Cocktail, Session, FormView, BaseView, AvatarMixin,
       // For automated testing accounts, emails begin with "avatarAB-" and end with "restmail.net"
       var isTestAccount = /^avatarAB-.+@restmail\.net$/.test(email);
 
-      return isTestAccount ||
+      return true || isTestAccount ||
              this.hasDisplayedAccountProfileImage() ||
              account.get('hadProfileImageSetBefore') ||
              this._able.choose('avatarLinkVisible', { email: email });

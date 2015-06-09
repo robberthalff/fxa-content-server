@@ -60,8 +60,6 @@ function (_, $, p, Validate, AuthErrors, BaseView, Tooltip,
 
     events: {
       'submit form': BaseView.preventDefaultThen('validateAndSubmit'),
-      'keyup form': ifFormValuesChanged('enableSubmitIfValid'),
-      'change form': ifFormValuesChanged('enableSubmitIfValid'),
       'input form': ifFormValuesChanged('enableSubmitIfValid')
     },
 
@@ -94,7 +92,11 @@ function (_, $, p, Validate, AuthErrors, BaseView, Tooltip,
       return values;
     },
 
-    enableSubmitIfValid: function () {
+    enableSubmitIfValid: function (event) {
+      if (event) {
+        event.stopImmediatePropagation();
+      }
+
       // the change event can be called after the form is already
       // submitted if the user presses "enter" in the form. If the
       // form is in the midst of being submitted, bail out now.
@@ -154,8 +156,11 @@ function (_, $, p, Validate, AuthErrors, BaseView, Tooltip,
      * @method validateAndSubmit
      * @return {promise}
      */
-    validateAndSubmit: allowOnlyOneSubmit(function validateAndSubmit () {
+    validateAndSubmit: allowOnlyOneSubmit(function validateAndSubmit (event) {
       var self = this;
+      if (event) {
+        event.stopImmediatePropagation();
+      }
 
       return p()
         .then(function () {
@@ -163,6 +168,7 @@ function (_, $, p, Validate, AuthErrors, BaseView, Tooltip,
             return;
           }
 
+      console.log('submit?');
           if (! self.isValid()) {
             // Validation error is surfaced for testing.
             throw self.showValidationErrors();
@@ -215,6 +221,7 @@ function (_, $, p, Validate, AuthErrors, BaseView, Tooltip,
       }
 
       var inputEls = this.$('input');
+      console.log('els', inputEls);
       for (var i = 0, length = inputEls.length; i < length; ++i) {
         var el = inputEls[i];
         if (! this.isElementValid(el)) {
