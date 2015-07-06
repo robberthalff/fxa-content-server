@@ -144,6 +144,7 @@ function (
         this.initializeL10n(),
         this.initializeInterTabChannel()
       ])
+      .then(_.bind(this.redirectIfPartner, this))
       .then(_.bind(this.allResourcesReady, this))
       .fail(function (err) {
         if (console && console.error) {
@@ -552,6 +553,16 @@ function (
         });
       }
       this._window.router = this._router;
+    },
+
+    redirectIfPartner: function () {
+      var P11 = 'p11';
+      var openIdUrl;
+      if (this._relier.get('entrypoint') === P11) {
+         openIdUrl = this._config.openidBridgeUrl + '/authenticate' +
+          '?identifier=' + encodeURIComponent(this._config.openidPartners[P11]);
+        this._window.location = openIdUrl;
+      }
     },
 
     allResourcesReady: function () {

@@ -14,6 +14,8 @@ var metricsSampleRate = config.get('metrics.sample_rate');
 var allowedParentOrigins = config.get('allowed_parent_origins');
 var marketingEmailApiServerUrl = config.get('marketing_email.api_url');
 var marketingEmailPreferencesUrl = config.get('marketing_email.preferences_url');
+var openidBridgeUrl = config.get('openid_bridge_url');
+var openidPartners = config.get('openid_partners');
 
 module.exports = function () {
   var route = {};
@@ -45,6 +47,8 @@ module.exports = function () {
       marketingEmailPreferencesUrl: marketingEmailPreferencesUrl,
       oAuthClientId: clientId,
       oAuthUrl: oauthServerUrl,
+      openidBridgeUrl: openidBridgeUrl,
+      openidPartners: openidPartners,
       // req.lang is set by abide in a previous middleware.
       language: req.lang,
       metricsSampleRate: metricsSampleRate,

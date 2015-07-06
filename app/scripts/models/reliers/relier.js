@@ -55,6 +55,7 @@ define([
           self.importSearchParam('setting');
           self.importSearchParam('entrypoint');
           self.importSearchParam('campaign');
+          self.importSearchParam('session');
 
           // A relier can indicate they do not want to allow
           // cached credentials if they set email === 'blank'

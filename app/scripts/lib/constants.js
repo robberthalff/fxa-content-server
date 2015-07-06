@@ -16,6 +16,8 @@ define([], function () {
     FX_DESKTOP_V2_CONTEXT: 'fx_desktop_v2',
     FX_DESKTOP_SYNC: 'sync',
 
+    ACTION_PARTNER11: 'p11',
+
     IFRAME_CONTEXT: 'iframe',
 
     VERIFICATION_POLL_IN_MS: 4000,

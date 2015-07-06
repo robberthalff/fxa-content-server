@@ -19,31 +19,32 @@ function (Cocktail, p, BaseView, FormView, SignInView,
 
   var View = SignInView.extend({
     template: Template,
-    className: 'sign-in',
+    className: 'openid-sign-in',
 
     initialize: function (options) {
+      SignInView.prototype.initialize.call(this, options);
       options = options || {};
-      var uid = /uid=([a-fA-F0-9]{32})/.exec(window.location.search)[1]
-      var sessionToken = /session=([a-fA-F0-9]{64})/.exec(window.location.search)[1]
-      this._formPrefill = options.formPrefill;
+
+      this._uid = this.relier.get('uid');
+      this._sessionToken = this.relier.get('session');
       Session.clear();
       this.user.clearSignedInAccount();
-      var account = this.user.initAccount({
-        uid: uid,
-        sessionToken: sessionToken
-      })
-      var self = this
-      account.signIn()
-        .then(
-          function () {
-            return self.user.setSignedInAccount(account)
-          }
-        )
-        .then(
-          function () {
-            self.onSignInSuccess(account)
-          }
-        )
+    },
+
+    beforeRender: function () {
+      var self = this;
+      var account = self.user.initAccount({
+        uid: self._uid,
+        sessionToken: self._sessionToken
+      });
+
+      return account.signIn()
+        .then(function () {
+          return self.user.setSignedInAccount(account);
+        })
+        .then(function () {
+          self.onSignInSuccess(account);
+        });
     },
 
     context: function () {

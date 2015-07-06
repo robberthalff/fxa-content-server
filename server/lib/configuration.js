@@ -324,6 +324,15 @@ var conf = module.exports = convict({
       default: 'https://www-dev.allizom.org/newsletter/existing/',
       env: 'FXA_MARKETING_EMAIL_PREFERENCES_URL'
     }
+  },
+  openid_bridge_url: {
+    doc: 'Server that handles SSO authentication',
+    format: String,
+    default: undefined
+  },
+  openid_partners: {
+    doc: 'Partners we authenticate with',
+    default: {}
   }
 });
 
