@@ -35,13 +35,13 @@ function (Cocktail, p, BaseView, Template, Session, AuthErrors) {
         uid: self._uid,
         sessionToken: self._sessionToken,
         keyFetchToken: self._keyFetchToken,
+        verified: true,
+        unwrapBKey: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+        customizeSync: false,
         email: self._uid + '@accounts.firefox.com' // TODO fix me
       });
 
-      return account.signIn()
-        .then(function () {
-          return self.user.setSignedInAccount(account);
-        })
+      return self.user.setSignedInAccount(account)
         .then(function () {
           self.onSignInSuccess(account);
         });
