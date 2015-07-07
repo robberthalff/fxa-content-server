@@ -8,21 +8,18 @@ define([
   'cocktail',
   'lib/promise',
   'views/base',
-  'views/form',
-  'views/sign_in',
   'stache!templates/openid',
   'lib/session',
   'lib/auth-errors'
 ],
-function (Cocktail, p, BaseView, FormView, SignInView,
-    Template, Session, AuthErrors) {
+function (Cocktail, p, BaseView, Template, Session, AuthErrors) {
 
-  var View = SignInView.extend({
+  var View = BaseView.extend({
     template: Template,
     className: 'openid-sign-in',
 
     initialize: function (options) {
-      SignInView.prototype.initialize.call(this, options);
+      BaseView.prototype.initialize.call(this, options);
       options = options || {};
 
       this._uid = this.relier.get('uid');
@@ -44,6 +41,19 @@ function (Cocktail, p, BaseView, FormView, SignInView,
         })
         .then(function () {
           self.onSignInSuccess(account);
+        });
+    },
+
+    onSignInSuccess: function (account) {
+      var self = this;
+      self.logScreenEvent('success');
+      return self.broker.afterSignIn(account)
+        .then(function (result) {
+          if (! (result && result.halt)) {
+            self.navigate('settings');
+          }
+
+          return result;
         });
     },
 
