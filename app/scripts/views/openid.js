@@ -52,10 +52,7 @@ function (Cocktail, p, BaseView, Template, Session, AuthErrors) {
       self.logScreenEvent('success');
       return self.broker.afterSignIn(account)
         .then(function (result) {
-          if (! (result && result.halt)) {
-            self.navigate('settings');
-          }
-
+          self.navigate('settings');
           return result;
         });
     },
