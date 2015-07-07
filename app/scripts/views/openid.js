@@ -24,6 +24,7 @@ function (Cocktail, p, BaseView, Template, Session, AuthErrors) {
 
       this._uid = this.relier.get('uid');
       this._sessionToken = this.relier.get('session');
+      this._keyFetchToken = this.relier.get('key');
       Session.clear();
       this.user.clearSignedInAccount();
     },
@@ -32,7 +33,9 @@ function (Cocktail, p, BaseView, Template, Session, AuthErrors) {
       var self = this;
       var account = self.user.initAccount({
         uid: self._uid,
-        sessionToken: self._sessionToken
+        sessionToken: self._sessionToken,
+        keyFetchToken: self._keyFetchToken,
+        email: self._uid + '@accounts.firefox.com' // TODO fix me
       });
 
       return account.signIn()
