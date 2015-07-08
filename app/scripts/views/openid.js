@@ -12,6 +12,7 @@ define([
 ],
 function (Cocktail, p, BaseView, Template, Session, AuthErrors) {
   'use strict';
+
   var View = BaseView.extend({
     template: Template,
     className: 'openid-sign-in',
