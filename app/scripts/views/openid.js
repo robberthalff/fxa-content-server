@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-'use strict';
-
 define([
   'cocktail',
   'lib/promise',
@@ -13,7 +11,7 @@ define([
   'lib/auth-errors'
 ],
 function (Cocktail, p, BaseView, Template, Session, AuthErrors) {
-
+  'use strict';
   var View = BaseView.extend({
     template: Template,
     className: 'openid-sign-in',

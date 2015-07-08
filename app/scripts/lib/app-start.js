@@ -559,7 +559,7 @@ function (
       var P11 = 'p11';
       var openIdUrl;
       if (this._relier.get('entrypoint') === P11) {
-         openIdUrl = this._config.openidBridgeUrl + '/authenticate' +
+        openIdUrl = this._config.openidBridgeUrl + '/authenticate' +
           '?identifier=' + encodeURIComponent(this._config.openidPartners[P11]);
         this._window.location = openIdUrl;
       }
