@@ -29,6 +29,8 @@ define([
       options = options || {};
 
       this.window = options.window || window;
+      this.openidBridgeUrl = options.openidBridgeUrl;
+      this.openidPartners = options.openidPartners;
     },
 
     /**
@@ -57,6 +59,13 @@ define([
           self.importSearchParam('campaign');
           self.importSearchParam('session');
           self.importSearchParam('key');
+          self.importSearchParam('partner');
+
+          if (self.openidPartners && self.get('partner') in self.openidPartners) {
+            self.set('partnerOpenidUrl', self.openidBridgeUrl +
+              '/authenticate?identifier=' +
+              encodeURIComponent(self.openidPartners[self.get('partner')]));
+          }
 
           // A relier can indicate they do not want to allow
           // cached credentials if they set email === 'blank'

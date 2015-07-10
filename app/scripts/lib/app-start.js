@@ -144,7 +144,6 @@ function (
         this.initializeL10n(),
         this.initializeInterTabChannel()
       ])
-      .then(_.bind(this.redirectIfPartner, this))
       .then(_.bind(this.allResourcesReady, this))
       .fail(function (err) {
         if (console && console.error) {
@@ -358,17 +357,23 @@ function (
           // the service name is translated correctly.
           relier = new FxDesktopRelier({
             window: this._window,
+            openidBridgeUrl: this._config.openidBridgeUrl,
+            openidPartners: this._config.openidPartners,
             translator: this._translator
           });
         } else if (this._isOAuth()) {
           relier = new OAuthRelier({
             window: this._window,
             oAuthClient: this._oAuthClient,
+            openidBridgeUrl: this._config.openidBridgeUrl,
+            openidPartners: this._config.openidPartners,
             session: Session
           });
         } else {
           relier = new Relier({
-            window: this._window
+            window: this._window,
+            openidBridgeUrl: this._config.openidBridgeUrl,
+            openidPartners: this._config.openidPartners
           });
         }
 
@@ -553,16 +558,6 @@ function (
         });
       }
       this._window.router = this._router;
-    },
-
-    redirectIfPartner: function () {
-      var P11 = 'p11';
-      var openIdUrl;
-      if (this._relier.get('entrypoint') === P11) {
-        openIdUrl = this._config.openidBridgeUrl + '/authenticate' +
-          '?identifier=' + encodeURIComponent(this._config.openidPartners[P11]);
-        this._window.location = openIdUrl;
-      }
     },
 
     allResourcesReady: function () {

@@ -109,7 +109,8 @@ module.exports = function (config, i18n) {
       '/account_unlock_complete',
       '/signup_permissions',
       '/signin_permissions',
-      '/openid'
+      '/openid',
+      '/start'
     ];
 
     var ALLOWED_TO_FRAME = {
