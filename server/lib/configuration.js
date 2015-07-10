@@ -328,7 +328,7 @@ var conf = module.exports = convict({
   openid_bridge_url: {
     doc: 'Server that handles SSO authentication',
     format: String,
-    default: 'https://dcoates.dev.lcip.org/open_id'
+    default: 'https://partner11.dev.lcip.org/open_id'
   },
   openid_partners: {
     doc: 'Partners we authenticate with and their identifier',
