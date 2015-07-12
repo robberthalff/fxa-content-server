@@ -22,6 +22,7 @@ function (Cocktail, BaseView, Template, Session) {
       this._uid = this.relier.get('uid');
       this._sessionToken = this.relier.get('session');
       this._keyFetchToken = this.relier.get('key');
+      this._partner = this.relier.get('partner');
       Session.clear();
       this.user.clearSignedInAccount();
     },
@@ -33,9 +34,9 @@ function (Cocktail, BaseView, Template, Session) {
         sessionToken: self._sessionToken,
         keyFetchToken: self._keyFetchToken,
         verified: true,
-        unwrapBKey: '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef',
+        unwrapBKey: '0000000000000000000000000000000000000000000000000000000000000000',
         customizeSync: false,
-        email: self._uid + '@accounts.firefox.com' // TODO fix me
+        email: self._partner + '_user_' + self._uid.substr(0, 6) + '@firefox.com' // TODO fix me
       });
 
       return self.user.setSignedInAccount(account)
