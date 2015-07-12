@@ -4,13 +4,11 @@
 
 define([
   'cocktail',
-  'lib/promise',
   'views/base',
   'stache!templates/openid',
-  'lib/session',
-  'lib/auth-errors'
+  'lib/session'
 ],
-function (Cocktail, p, BaseView, Template, Session, AuthErrors) {
+function (Cocktail, BaseView, Template, Session) {
   'use strict';
 
   var View = BaseView.extend({
