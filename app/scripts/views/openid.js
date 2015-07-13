@@ -50,7 +50,9 @@ function (Cocktail, BaseView, Template, Session) {
       self.logScreenEvent('success');
       return self.broker.afterSignIn(account)
         .then(function (result) {
-          self.navigate('settings');
+          if (! (result && result.halt)) {
+            self.navigate('settings');
+          }
           return result;
         });
     },
