@@ -59,7 +59,8 @@
 }
 
 #partner-button {
-  background-color: rgb(204, 2, 51);
+  background: no-repeat rgb(204, 2, 51) image-url('p11.png') center center;
+  background-size: auto 28px;
 }
 
 button::-moz-focus-inner {
