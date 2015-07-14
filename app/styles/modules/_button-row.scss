@@ -60,7 +60,11 @@
 
 #partner-button {
   background: no-repeat rgb(204, 2, 51) image-url('p11.png') center center;
-  background-size: auto 28px;
+  background-size: auto 24px;
+
+  @include respond-to('small') {
+    background-size: auto 18px;
+  }
 }
 
 #partner-button[disabled] {
