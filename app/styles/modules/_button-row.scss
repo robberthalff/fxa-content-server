@@ -63,6 +63,10 @@
   background-size: auto 28px;
 }
 
+#partner-button[disabled] {
+  background-image: none;
+}
+
 button::-moz-focus-inner {
   border: 0;
   padding: 0;
