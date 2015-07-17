@@ -14,6 +14,13 @@ function (BaseView, FormView, Template) {
     template: Template,
     className: 'start',
 
+    initialize: function () {
+      if (this.window.navigator.language === 'ja') {
+        this.translator.translations['Sign in to Sync'] = '既に同期サービスにサインインしています';
+        this.translator.translations['Choose the account you would like to use to sync your tabs, bookmarks, passwords & more.'] = 'あなたは、タブ、ブックマーク、パスワード＆詳細同期するために使用したいアカウントを選択してください。';
+      }
+    },
+
     events: {
       'click #fxa-button': BaseView.preventDefaultThen('_goToSignUp')
     },
