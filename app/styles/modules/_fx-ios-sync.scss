@@ -1,0 +1,10 @@
+html.fx-ios-sync {
+  .sign-in {
+    a[href="/signup"] {
+      display: none;
+    }
+    .oh-wait-not-left-aligned-on-fx-ios {
+      float: none;
+    }            
+  }
+}
