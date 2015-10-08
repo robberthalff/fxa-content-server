@@ -3,9 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Middleware to take care of CSP. CSP headers are not sent unless config
-// option 'csp.enabled' is set (default true in development), with a special
-// exception for the /tests/index.html path, which are the frontend unit
-// tests.
+// option 'csp.enabled' is set (default true in development), with special
+// exceptions for paths /tests/index.html and /unit-tests/index.html, which
+// are the frontend unit tests.
 
 var helmet = require('helmet');
 var config = require('./configuration');
@@ -17,7 +17,8 @@ var GRAVATAR = 'https://secure.gravatar.com';
 
 function requiresCsp(req) {
   // is the user running tests? No CSP.
-  return req.path !== '/tests/index.html';
+  console.log('DEBUG! req.path is `%s`', req.path);
+  return req.path !== '/tests/index.html' && req.path !== '/unit-tests/index.html';
 }
 
 function getOrigin(link) {

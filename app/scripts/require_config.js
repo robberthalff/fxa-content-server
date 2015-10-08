@@ -43,6 +43,7 @@ require.config({
     sinon: '../bower_components/sinon/index',
     sjcl: '../bower_components/sjcl/sjcl',
     speedTrap: '../bower_components/speed-trap/dist/speed-trap',
+    squire: '../bower_components/squire/src/Squire',
     stache: '../bower_components/requirejs-mustache/stache',
     text: '../bower_components/requirejs-text/text',
     underscore: '../bower_components/underscore/underscore',

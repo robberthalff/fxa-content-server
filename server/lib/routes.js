@@ -73,6 +73,9 @@ module.exports = function (config, i18n) {
           cover_never: coverNever //eslint-disable-line camelcase
         });
       });
+      app.get('/unit-tests/index.html', function (req, res) {
+        return res.render('mocha-unit');
+      });
     }
 
     // an array is used instead of a regexp simply because the regexp

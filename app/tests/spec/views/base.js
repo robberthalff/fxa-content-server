@@ -137,7 +137,7 @@ function (chai, $, sinon, BaseView, p, Translator, EphemeralMessages, Metrics,
         };
         return view.render()
             .then(function () {
-              assert.equal(view.titleFromView(), 'Firefox Accounts Unit Tests');
+              assert.equal(view.titleFromView(), 'Firefox Accounts Integration Tests');
             });
       });
 
