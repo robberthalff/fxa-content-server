@@ -18,9 +18,10 @@ define(function (require, exports, module) {
   var EVENTS = {
     COMPLETE_RESET_PASSWORD_TAB_OPEN: 'fxaccounts:complete_reset_password_tab_open',
     DELETE: 'fxaccounts:delete',
+    DEVICE_REFRESH: 'fxaccounts:device_refresh',
     PROFILE_CHANGE: 'profile:change',
     SIGNED_IN: 'internal:signed_in',
-    SIGNED_OUT: 'internal:signed_out'
+    SIGNED_OUT: 'fxaccounts:logout'
   };
 
   var Notifer = Backbone.Model.extend({
@@ -36,11 +37,14 @@ define(function (require, exports, module) {
 
       if (options.webChannel) {
         this._channels.push(options.webChannel);
+        // listen for incoming messages from WebChannel
+        this._listen(options.webChannel);
       }
 
       if (options.tabChannel) {
         this._tabChannel = options.tabChannel;
         this._channels.push(options.tabChannel);
+        // listen for incoming messages from tab channels
         this._listen(options.tabChannel);
       }
     },
@@ -56,11 +60,11 @@ define(function (require, exports, module) {
       });
     },
 
-    // Listen for notifications from other fxa tabs or frames
-    _listen: function (tabChannel) {
+    // Listen for notifications from other channels
+    _listen: function (channel) {
       var self = this;
       _.each(EVENTS, function (name) {
-        tabChannel.on(name, self.trigger.bind(self, name));
+        channel.on(name, self.trigger.bind(self, name));
       });
     },
 
