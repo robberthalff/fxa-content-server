@@ -10,10 +10,49 @@
     <p id="permission-request">{{#t}}%(serviceName)s wants the following information from your account:{{/t}}</p>
 
     <form id="permissions" novalidate>
-      <div class="input-row">
-        <label class="small-label">{{#t}}Email{{/t}}</label>
-        <input type="email" class="email" value="{{ email }}" disabled/>
-      </div>
+      <fieldset class="checkbox-row" disabled>
+        <label class="fxa-checkbox">
+          <input name="email" type="checkbox" checked="checked" disabled />
+
+          <div class="fxa-checkbox__value">{{ email }}</div>
+          <div class="fxa-checkbox__label">
+            {{#t}}Email address (required){{/t}}
+          </div>
+        </label>
+      </fieldset>
+
+      {{#isDisplayNameRequested}}
+        <fieldset class="checkbox-row">
+          <label class="fxa-checkbox">
+            <input name="displayName" type="checkbox" checked="checked" />
+
+            <div class="fxa-checkbox__value">{{ displayName }}</div>
+            <div class="fxa-checkbox__label">
+              {{#t}}Display name{{/t}}
+            </div>
+          </label>
+        </fieldset>
+      {{/isDisplayNameRequested}}
+
+      {{#isAvatarRequested}}
+        <fieldset class="checkbox-row">
+          <label class="fxa-checkbox">
+            <!--
+            {{#unsafeAvatar}}
+              <img class="avatar-wrapper" src="{{{ unsafeAvatar }}}" />
+            {{/unsafeAvatar}}
+            {{^unsafeAvatar}}
+              <div class="avatar-wrapper with-default" />
+            {{/unsafeAvatar}}
+            -->
+            <input name="avatar" type="checkbox" checked="checked" />
+            <span class="fxa-checkbox__value">
+              {{#t}}Account picture{{/t}}
+            </span>
+          </label>
+        </fieldset>
+      {{/isAvatarRequested}}
+
 
       <div class="button-row">
         <button id="accept" type="submit">{{#t}}Accept{{/t}}</button>

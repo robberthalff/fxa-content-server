@@ -6,6 +6,7 @@ define(function (require, exports, module) {
   'use strict';
 
   var BackMixin = require('views/mixins/back-mixin');
+  var CheckboxMixin = require('views/mixins/checkbox-mixin');
   var Cocktail = require('cocktail');
   var FormView = require('views/form');
   var p = require('lib/promise');
@@ -32,18 +33,35 @@ define(function (require, exports, module) {
     context: function () {
       var account = this.getAccount();
       return {
+        displayName: account.get('displayName') || 'None set',
         email: account.get('email'),
+        isDisplayNameRequested: this._isDisplayNameRequested(),
+        isAvatarRequested: this._isAvatarRequested(),
         privacyUri: this.relier.get('privacyUri'),
         serviceName: this.relier.get('serviceName'),
-        termsUri: this.relier.get('termsUri')
+        termsUri: this.relier.get('termsUri'),
+        unsafeAvatar: encodeURI(account.get('profileImageUrl') || '')
       };
+    },
+
+    _isAvatarRequested: function () {
+      var account = this.getAccount();
+      return account.has('profileImageUrl');
+    },
+
+    _isDisplayNameRequested: function () {
+      var account = this.getAccount();
+      return account.has('displayName');
     },
 
     beforeRender: function () {
       // user cannot proceed if they have not initiated a sign up/in.
-      if (! this.getAccount().get('sessionToken')) {
+      var account = this.getAccount();
+      if (! account.get('sessionToken')) {
         this.navigate(this._previousView());
         return false;
+      } else {
+        return account.fetchProfile();
       }
     },
 
@@ -96,6 +114,7 @@ define(function (require, exports, module) {
   Cocktail.mixin(
     View,
     BackMixin,
+    CheckboxMixin,
     ServiceMixin,
     SignupSuccessMixin
   );

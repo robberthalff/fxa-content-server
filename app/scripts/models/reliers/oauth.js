@@ -190,6 +190,7 @@ define(function (require, exports, module) {
     },
 
     accountNeedsPermissions: function (account) {
+      return true;
       if (this.isTrusted()) {
         return false;
       }
