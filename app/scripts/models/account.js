@@ -649,6 +649,15 @@ define(function (require, exports, module) {
 
           return relier.deriveRelierKeys(accountKeys, self.get('uid'));
         });
+    },
+
+    /**
+     * Check whether the account's UID is registered with FxA.
+     *
+     * @returns {promise} resolves to `true` if an account exists, `false` otw.
+     */
+    checkUidExists: function () {
+      return this._fxaClient.checkAccountExists(this.get('uid'));
     }
   });
 

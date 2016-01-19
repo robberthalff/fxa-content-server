@@ -6,6 +6,7 @@ define(function (require, exports, module) {
   'use strict';
 
   var $ = require('jquery');
+  var Account = require('models/account');
   var AuthErrors = require('lib/auth-errors');
   var Backbone = require('backbone');
   var Broker = require('models/auth_brokers/base');
@@ -264,7 +265,7 @@ define(function (require, exports, module) {
 
             sinon.stub(SignInView.prototype, 'onSignInError', sinon.spy());
 
-            view.onSignInError(account, 'password', err);
+            return view.onSignInError(account, 'password', err);
           });
 
           afterEach(function () {
@@ -309,7 +310,6 @@ define(function (require, exports, module) {
             });
         });
       });
-
     });
 
     describe('with unregistered email', function () {
@@ -330,17 +330,22 @@ define(function (require, exports, module) {
             return p.reject(AuthErrors.toError('UNKNOWN_ACCOUNT'));
           });
 
-          sinon.spy(view, 'displayError');
+          sinon.stub(view, 'invokeBrokerMethod', function () {
+            return p();
+          });
 
-          return view.submit();
+          return view.submit().fail(function (error) {
+            // swallow the error
+          });
         });
 
-        it('prints an error message and does not allow the user to sign up', function () {
-          assert.isTrue(view.displayError.called);
-          var err = view.displayError.args[0][0];
-          assert.isTrue(AuthErrors.is(err, 'UNKNOWN_ACCOUNT'));
-          // no link to sign up.
-          assert.equal(view.$('.error').find('a').length, 0);
+        it('delegates to the `afterForceAuthError` method of the broker', function () {
+          // view.invokeBrokerMethod.args[0] is the call to `beforeSignIn`
+          var args = view.invokeBrokerMethod.args[1];
+
+          assert.equal(args[0], 'afterForceAuthError');
+          assert.instanceOf(args[1], Account);
+          assert.isTrue(AuthErrors.is(args[2], 'DELETED_ACCOUNT'));
         });
       });
 
@@ -360,10 +365,37 @@ define(function (require, exports, module) {
         it('prints an error message and does not allow the user to sign up', function () {
           assert.isTrue(view.displayError.called);
           var err = view.displayError.args[0][0];
-          assert.isTrue(AuthErrors.is(err, 'UNKNOWN_ACCOUNT'));
+          assert.isTrue(AuthErrors.is(err, 'DELETED_ACCOUNT'));
           // no link to sign up.
           assert.equal(view.$('.error').find('a').length, 0);
         });
+      });
+    });
+
+    describe('with a relier specified uid', function () {
+      beforeEach(function () {
+        initDeps();
+
+        sinon.stub(user, 'checkAccountExists', function () {
+          return p(false);
+        });
+
+        relier.set({
+          email: 'testuser@testuser.com',
+          uid: 'uid'
+        });
+
+        return view.beforeRender();
+      });
+
+      it('checks to see if the account is registered', function () {
+        assert.isTrue(user.checkAccountExists.called);
+        assert.equal(
+          user.checkAccountExists.args[0][0].get('uid'), 'uid');
+      });
+
+      it('sets a fatal error if broker does not have the `forceAuthAllowUidChange` capability', function () {
+        assert.isTrue(AuthErrors.is(view._fatalError, 'DELETED_ACCOUNT'));
       });
     });
 

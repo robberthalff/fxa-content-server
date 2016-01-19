@@ -22,21 +22,52 @@ define(function (require, exports, module) {
     return '';
   }
 
+  var proto = SignInView.prototype;
+
   var View = SignInView.extend({
     template: Template,
     className: 'force-auth',
 
-    context: function () {
-      var fatalError = '';
-      var email = this.relier.get('email');
+    _fatalError: null,
 
-      if (! email) {
-        fatalError = AuthErrors.toError('FORCE_AUTH_EMAIL_REQUIRED');
+    beforeRender: function () {
+      var relier = this.relier;
+
+      if (! relier.has('email')) {
+        this._fatalError = AuthErrors.toError('FORCE_AUTH_EMAIL_REQUIRED');
+        return;
       }
 
+      /**
+       * If the relier specifies a UID, check whether the UID is still
+       * registered. If the uid is no longer registered, notify the
+       * broker that the account has been deleted. The user will
+       * still be allowed to sign in with their email address. If
+       * no account is registered with the given email address,
+       * the broker will decide whether to allow the user to sign up.
+       */
+      if (relier.has('uid')) {
+        var account = this.user.initAccount({
+          email: relier.get('email'),
+          uid: relier.get('uid')
+        });
+
+        var self = this;
+        return this.user.checkAccountExists(account)
+          .then(function (exists) {
+            if (! exists &&
+                ! self.broker.hasCapability('forceAuthAllowUidChange')) {
+              // Unless the broker allows a UID change, dead end.
+              self._fatalError = AuthErrors.toError('DELETED_ACCOUNT');
+            }
+          });
+      }
+    },
+
+    context: function () {
       return {
-        email: email,
-        fatalError: getFatalErrorMessage(this, fatalError),
+        email: this.relier.get('email'),
+        fatalError: getFatalErrorMessage(this, this._fatalError),
         isPasswordAutoCompleteDisabled: this.isPasswordAutoCompleteDisabled(),
         password: this._formPrefill.get('password')
       };
@@ -50,19 +81,27 @@ define(function (require, exports, module) {
       this._formPrefill.set('password', this.getElementValue('.password'));
     },
 
-    onSignInError: function (account, password, err) {
-      if (AuthErrors.is(err, 'UNKNOWN_ACCOUNT')) {
-        // dead end, do not allow the user to sign up.
-        this.displayError(err);
-      } else {
-        return SignInView.prototype.onSignInError.call(
-            this, account, password, err);
+    onSignInError: function (account, password, error) {
+      var self = this;
+      if (AuthErrors.is(error, 'UNKNOWN_ACCOUNT')) {
+        error = AuthErrors.toError('DELETED_ACCOUNT');
       }
+
+      return self.invokeBrokerMethod('afterForceAuthError', account, error)
+        .then(function () {
+          return proto.onSignInError.call(self, account, password, error);
+        });
     },
 
     onSignInSuccess: function (account) {
       var self = this;
       self.logViewEvent('success');
+
+      // The account's uid may have changed, update the relier just in case.
+      // If the relier does not support an account `uid` change, the
+      // flow would have stopped in `beforeRender`.
+      self.relier.set('uid', account.get('uid'));
+
       return self.invokeBrokerMethod('afterForceAuth', account)
         .then(function () {
           self.navigate(self.model.get('redirectTo') || 'settings', {}, {
@@ -76,8 +115,12 @@ define(function (require, exports, module) {
       var email = self.relier.get('email');
 
       return self.resetPassword(email)
-        .fail(function (err) {
-          self.displayError(err);
+        .fail(function (error) {
+          if (AuthErrors.is(error, 'UNKNOWN_ACCOUNT')) {
+            error = AuthErrors.toError('DELETED_ACCOUNT');
+          }
+
+          self.displayError(error);
         });
     }),
 

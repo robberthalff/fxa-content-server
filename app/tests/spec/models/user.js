@@ -809,5 +809,41 @@ define(function (require, exports, module) {
         });
       });
     });
+
+    describe('checkAccountExists', function () {
+      var account;
+      var exists;
+
+      beforeEach(function () {
+        account = user.initAccount({
+          email: 'a@a.com',
+          sessionToken: 'session token',
+          uid: 'the uid'
+        });
+
+        sinon.stub(account, 'checkUidExists', function () {
+          return p(false);
+        });
+
+        sinon.spy(user, 'removeAccount');
+
+        return user.checkAccountExists(account)
+          .then(function (_exists) {
+            exists = _exists;
+          });
+      });
+
+      it('delegates to the account model', function () {
+        assert.isTrue(account.checkUidExists.called);
+      });
+
+      it('removes the account if it does not exist', function () {
+        assert.isTrue(user.removeAccount.calledWith(account));
+      });
+
+      it('returns a promise that resolves to whether the account exists', function () {
+        assert.isFalse(exists);
+      });
+    });
   });
 });

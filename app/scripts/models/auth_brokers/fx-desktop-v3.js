@@ -12,16 +12,32 @@ define(function (require, exports, module) {
   'use strict';
 
   var _ = require('underscore');
+  var AuthErrors = require('lib/auth-errors');
   var FxDesktopV2AuthenticationBroker = require('./fx-desktop-v2');
+  var NullBehavior = require('views/behaviors/null');
 
   var proto = FxDesktopV2AuthenticationBroker.prototype;
 
   var FxDesktopV3AuthenticationBroker = FxDesktopV2AuthenticationBroker.extend({
     defaultCapabilities: _.extend({}, proto.defaultCapabilities, {
+      forceAuthAllowUidChange: true,
       syncPreferencesNotification: true
     }),
 
-    type: 'fx-desktop-v3'
+    type: 'fx-desktop-v3',
+
+    afterForceAuthError: function (account, error) {
+      // The default behavior is to halt before the signup confirmation
+      // poll because about:accounts takes care of polling and updating the UI.
+      // /force_auth is not opened in about:accounts and unless
+      // beforeSignUpConfirmationPoll is overridden, the user receives no
+      // visual feedback in this tab once the verification is complete.
+      if (AuthErrors.is(error, 'DELETED_ACCOUNT')) {
+        this.setBehavior('beforeSignUpConfirmationPoll', new NullBehavior());
+      }
+
+      return proto.afterForceAuthError.call(this, account, error);
+    }
   });
 
   module.exports = FxDesktopV3AuthenticationBroker;

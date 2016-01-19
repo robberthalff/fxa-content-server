@@ -25,7 +25,13 @@
 
     <form novalidate>
       <div class="input-row">
-        <input type="email" class="email" placeholder="{{#t}}Email{{/t}}" value="{{ email }}" spellcheck="false" {{#shouldFocusEmail}}autofocus{{/shouldFocusEmail}} required />
+        {{#forceEmail}}
+          <p class="prefillEmail">{{ forceEmail }}</p>
+          <input type="email" class="email hidden" value="{{ forceEmail }}" disabled />
+        {{/forceEmail}}
+        {{^forceEmail}}
+          <input type="email" class="email" placeholder="{{#t}}Email{{/t}}" value="{{ email }}" spellcheck="false" {{#shouldFocusEmail}}autofocus{{/shouldFocusEmail}} required />
+        {{/forceEmail}}
       </div>
 
       <div class="input-row password-row">
@@ -76,7 +82,9 @@
     </form>
 
     <div class="links">
-      <a href="/signin" class="sign-in">{{#t}}Have an account? Sign in.{{/t}}</a>
+      {{#isSignInEnabled}}
+        <a href="/signin" class="sign-in">{{#t}}Have an account? Sign in.{{/t}}</a>
+      {{/isSignInEnabled}}
     </div>
 
     {{/error}}

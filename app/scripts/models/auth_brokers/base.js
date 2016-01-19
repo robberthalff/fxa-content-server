@@ -11,7 +11,9 @@ define(function (require, exports, module) {
   'use strict';
 
   var _ = require('underscore');
+  var AuthErrors = require('lib/auth-errors');
   var Backbone = require('backbone');
+  var NavigateBehavior = require('views/behaviors/navigate');
   var NullBehavior = require('views/behaviors/null');
   var p = require('lib/promise');
   var SameBrowserVerificationModel = require('models/verification/same-browser');
@@ -44,10 +46,12 @@ define(function (require, exports, module) {
       afterCompleteSignUp: new NullBehavior(),
       afterDeleteAccount: new NullBehavior(),
       afterForceAuth: new NullBehavior(),
+      afterForceAuthError: new NullBehavior(),
       afterResetPasswordConfirmationPoll: new NullBehavior(),
       afterSignIn: new NullBehavior(),
       afterSignUp: new NullBehavior(),
       afterSignUpConfirmationPoll: new NullBehavior(),
+      beforeForceAuth: new NullBehavior(),
       beforeSignIn: new NullBehavior(),
       beforeSignUpConfirmationPoll: new NullBehavior()
     },
@@ -141,6 +145,26 @@ define(function (require, exports, module) {
      */
     afterForceAuth: function (/* account */) {
       return p(this.getBehavior('afterForceAuth'));
+    },
+
+    /**
+     * Called if there was an error authenticating the user from
+     * the force auth screen.
+     *
+     * @param {object} account
+     * @param {object} error
+     * @return {promise}
+     */
+    afterForceAuthError: function (account, error) {
+      if (AuthErrors.is(error, 'DELETED_ACCOUNT') &&
+          this.hasCapability('forceAuthAllowUidChange')) {
+        return new NavigateBehavior('signup', {
+          error: error,
+          forceEmail: account.get('email')
+        });
+      } else {
+        return p(this.getBehavior('afterForceAuthError'));
+      }
     },
 
     /**
@@ -337,6 +361,12 @@ define(function (require, exports, module) {
        * should the *_complete pages show the marketing snippet?
        */
       emailVerificationMarketingSnippet: true,
+      /**
+       * If the provided UID no longer exists on the auth server, can
+       * the user sign up/in with the same email address but a different
+       * uid?
+       */
+      forceAuthAllowUidChange: false,
       /**
        * Should the view handle signed-in notifications from other tabs?
        */

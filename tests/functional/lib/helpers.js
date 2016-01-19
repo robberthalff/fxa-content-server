@@ -11,21 +11,25 @@ define([
   'intern/node_modules/dojo/lang',
   'intern/node_modules/dojo/node!url',
   'intern/node_modules/dojo/node!querystring',
-  'intern/chai!assert'
+  'intern/node_modules/dojo/node!xmlhttprequest',
+  'intern/chai!assert',
+  'app/bower_components/fxa-js-client/fxa-client',
 ], function (intern, require, restmail, TestHelpers, pollUntil,
-  lang, Url, Querystring, assert) {
+  lang, Url, Querystring, nodeXMLHttpRequest, assert, FxaClient) {
   var config = intern.config;
+
+  var AUTH_SERVER_ROOT = config.fxaAuthRoot;
   var CONTENT_SERVER = config.fxaContentRoot;
-  var OAUTH_APP = config.fxaOauthApp;
-  var UNTRUSTED_OAUTH_APP = config.fxaUntrustedOauthApp;
   var EMAIL_SERVER_ROOT = config.fxaEmailRoot;
-  var SIGNIN_URL = config.fxaContentRoot + 'signin';
-  var SIGNUP_URL = config.fxaContentRoot + 'signup';
+  var EXTERNAL_SITE_LINK_TEXT = 'More information';
+  var EXTERNAL_SITE_URL = 'http://example.com';
+  var FORCE_AUTH_URL = config.fxaContentRoot + 'force_auth';
+  var OAUTH_APP = config.fxaOauthApp;
   var RESET_PASSWORD_URL = config.fxaContentRoot + 'reset_password';
   var SETTINGS_URL = config.fxaContentRoot + 'settings';
-
-  var EXTERNAL_SITE_URL = 'http://example.com';
-  var EXTERNAL_SITE_LINK_TEXT = 'More information';
+  var SIGNIN_URL = config.fxaContentRoot + 'signin';
+  var SIGNUP_URL = config.fxaContentRoot + 'signup';
+  var UNTRUSTED_OAUTH_APP = config.fxaUntrustedOauthApp;
 
   function clearBrowserState(context, options) {
     options = options || {};
@@ -344,6 +348,25 @@ define([
     return openFxaFromRp(context, page, urlSuffix, true);
   }
 
+  function openForceAuth(context, email, options) {
+    options = options || {};
+
+    var url = FORCE_AUTH_URL + '?email=' + encodeURIComponent(email);
+    if (options.uid) {
+      url += '&uid=' + encodeURIComponent(options.uid);
+    }
+
+    if (options.context) {
+      url += '&context=' + encodeURIComponent(options.context);
+    }
+
+    if (options.service) {
+      url += '&service=' + encodeURIComponent(options.service);
+    }
+
+    return openPage(context, url, '#fxa-force-auth-header');
+  }
+
   function reOpenWithAdditionalQueryParams(context, additionalQueryParams, waitForSelector) {
     return context.remote
       .getCurrentUrl()
@@ -430,6 +453,7 @@ define([
     options = options || {};
 
     var customizeSync = options.customizeSync || false;
+    var enterEmail = options.enterEmail !== false;
     var optInToMarketingEmail = options.optInToMarketingEmail || false;
     var age = options.age || 24;
     var submit = options.submit !== false;
@@ -447,11 +471,16 @@ define([
         }
       })
 
-      .findByCssSelector('form input.email')
-        .click()
-        .clearValue()
-        .type(email)
-      .end()
+      .then(function () {
+        if (enterEmail) {
+          return context.remote
+            .findByCssSelector('form input.email')
+              .click()
+              .clearValue()
+              .type(email)
+            .end();
+        }
+      })
 
       .findByCssSelector('form input.password')
         .click()
@@ -780,6 +809,11 @@ define([
     return testElementWasShown(context, selector);
   }
 
+  function noSuchErrorWasShown(context, selector) {
+    selector = selector || '.error[data-shown]';
+    return noSuchElement(context, selector);
+  }
+
   function testElementWasShown(context, selector) {
     return function () {
       return context.remote
@@ -796,9 +830,55 @@ define([
     };
   }
 
+  /**
+   * Create a user on the backend
+   *
+   * @param {string} email
+   * @param {string} password
+   * @param {object} [options]
+   * @param {object} [options.preVerified] pre-verify the user?
+   *   Defaults to false.
+   * @returns {promise} resolves with account info when complete.
+   */
+  function createUser (context, email, password, options) {
+    var client = new FxaClient(AUTH_SERVER_ROOT, {
+      xhr: nodeXMLHttpRequest.XMLHttpRequest
+    });
+
+    return context.remote.then(function () {
+      return client.signUp(
+          email, password, { preVerified: options.preVerified });
+    });
+  }
+
+  /**
+   * Convert a function to a form that can be used as a `then` callback.
+   *
+   * Example usage:
+   *
+   * var fillOutSignUp = FunctionalHelpers.thenify(FunctionalHelpers.fillOutSignUp)
+   *
+   * ...
+   * .then(fillOutSignUp(this, email, password))
+   * ...
+   *
+   * @param {function} callback - Function to convert
+   * @param {object} [context] - in which to call callback
+   * @returns {function} that can be used in a promise
+   */
+  function thenify(callback, context) {
+    return function () {
+      var args = arguments;
+      return function () {
+        return callback.apply(context || null, args);
+      };
+    };
+  }
+
   return {
     clearBrowserState: clearBrowserState,
     clearSessionStorage: clearSessionStorage,
+    createUser: createUser,
     fetchAllMetrics: fetchAllMetrics,
     fillOutChangePassword: fillOutChangePassword,
     fillOutCompleteResetPassword: fillOutCompleteResetPassword,
@@ -813,7 +893,9 @@ define([
     listenForWebChannelMessage: listenForWebChannelMessage,
     noSuchBrowserNotification: noSuchBrowserNotification,
     noSuchElement: noSuchElement,
+    noSuchErrorWasShown: noSuchErrorWasShown,
     openExternalSite: openExternalSite,
+    openForceAuth: openForceAuth,
     openFxaFromRp: openFxaFromRp,
     openFxaFromUntrustedRp: openFxaFromUntrustedRp,
     openPage: openPage,
@@ -831,6 +913,7 @@ define([
     testIsBrowserNotified: testIsBrowserNotified,
     testIsEventLogged: testIsEventLogged,
     testSuccessWasShown: testSuccessWasShown,
+    thenify: thenify,
     visibleByQSA: visibleByQSA
   };
 });

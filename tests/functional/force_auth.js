@@ -3,51 +3,45 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 define([
-  'intern',
   'intern!object',
   'intern/chai!assert',
-  'intern/node_modules/dojo/node!xmlhttprequest',
-  'app/bower_components/fxa-js-client/fxa-client',
   'tests/lib/helpers',
   'tests/functional/lib/helpers'
-], function (intern, registerSuite, assert, nodeXMLHttpRequest, FxaClient,
-  TestHelpers, FunctionalHelpers) {
-  var config = intern.config;
-  var AUTH_SERVER_ROOT = config.fxaAuthRoot;
-  var FORCE_AUTH_URL = config.fxaContentRoot + 'force_auth';
-
+], function (registerSuite, assert, TestHelpers, FunctionalHelpers) {
   var PASSWORD = 'password';
   var email;
-  var client;
 
-  function openFxa(context, email) {
-    var url = FORCE_AUTH_URL + '?email=' + encodeURIComponent(email);
-    return FunctionalHelpers.openPage(context, url, '#fxa-force-auth-header');
+  var openForceAuth = FunctionalHelpers.openForceAuth;
+
+  var fillOutForceAuth = FunctionalHelpers.thenify(FunctionalHelpers.fillOutForceAuth);
+  var clearBrowserState = FunctionalHelpers.thenify(FunctionalHelpers.clearBrowserState);
+
+  function testAccountNoLongerExistsErrorShown(context) {
+    return function () {
+      return context.remote.findByCssSelector('.error')
+        .getVisibleText()
+        .then(function (resultText) {
+          assert.include(resultText.toLowerCase(), 'no longer exists');
+        })
+      .end();
+    };
   }
 
   registerSuite({
-    name: 'force_auth with an existing user',
+    name: 'force_auth with a registered email',
 
     beforeEach: function () {
       email = TestHelpers.createEmail();
-      client = new FxaClient(AUTH_SERVER_ROOT, {
-        xhr: nodeXMLHttpRequest.XMLHttpRequest
-      });
       var self = this;
-      return client.signUp(email, PASSWORD, { preVerified: true })
-        .then(function () {
-          // clear localStorage to avoid polluting other tests.
-          return FunctionalHelpers.clearBrowserState(self);
-        });
+      return FunctionalHelpers.createUser(self, email, PASSWORD, { preVerified: true })
+        .then(clearBrowserState(self));
     },
 
     'sign in via force_auth': function () {
       var self = this;
-      return openFxa(self, email)
+      return openForceAuth(self, email)
 
-        .then(function () {
-          return FunctionalHelpers.fillOutForceAuth(self, PASSWORD);
-        })
+        .then(fillOutForceAuth(self, PASSWORD))
 
         .findById('fxa-settings-header')
         .end();
@@ -55,7 +49,7 @@ define([
 
     'forgot password flow via force-auth goes directly to confirm email screen': function () {
       var self = this;
-      return openFxa(self, email)
+      return openForceAuth(self, email)
         .findByCssSelector('.reset-password')
           .click()
         .end()
@@ -82,11 +76,9 @@ define([
 
     'form prefill information is cleared after sign in->sign out': function () {
       var self = this;
-      return openFxa(self, email)
+      return openForceAuth(self, email)
 
-        .then(function () {
-          return FunctionalHelpers.fillOutForceAuth(self, PASSWORD);
-        })
+        .then(fillOutForceAuth(self, PASSWORD))
 
         .findById('fxa-settings-header')
         .end()
@@ -109,7 +101,7 @@ define([
   });
 
   registerSuite({
-    name: 'force_auth with an unregistered user',
+    name: 'force_auth with an unregistered email',
 
     beforeEach: function () {
       email = TestHelpers.createEmail();
@@ -119,25 +111,40 @@ define([
 
     'sign in shows an error message': function () {
       var self = this;
-      return openFxa(self, email)
+      return openForceAuth(self, email)
 
-        .then(function () {
-          return FunctionalHelpers.fillOutForceAuth(self, PASSWORD);
-        })
+        .then(fillOutForceAuth(self, PASSWORD))
 
-        .then(FunctionalHelpers.visibleByQSA('.error'))
-        .end();
+        .then(testAccountNoLongerExistsErrorShown(self));
     },
 
     'reset password shows an error message': function () {
       var self = this;
-      return openFxa(self, email)
+      return openForceAuth(self, email)
         .findByCssSelector('a[href="/confirm_reset_password"]')
           .click()
         .end()
 
-        .then(FunctionalHelpers.visibleByQSA('.error'))
-        .end();
+        .then(testAccountNoLongerExistsErrorShown(self));
+    }
+  });
+
+  registerSuite({
+    name: 'force_auth with an unregistered uid',
+
+    beforeEach: function () {
+      email = TestHelpers.createEmail();
+      // clear localStorage to avoid polluting other tests.
+      return FunctionalHelpers.clearBrowserState(this);
+    },
+
+    'shows `account deleted` message immediately, no additional UI visible': function () {
+      var self = this;
+      return openForceAuth(self, email, { uid: TestHelpers.createUID() })
+
+        .then(testAccountNoLongerExistsErrorShown(self))
+
+        .then(FunctionalHelpers.noSuchElement(self, 'a[href="/confirm_reset_password"]'));
     }
   });
 
@@ -145,7 +152,7 @@ define([
   function testRepopulateFields(dest, header) {
     var self = this;
 
-    return openFxa(self, email)
+    return openForceAuth(self, email)
 
       .findByCssSelector('input[type=password]')
         .clearValue()

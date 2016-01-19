@@ -1510,5 +1510,21 @@ define(function (require, exports, module) {
         });
       });
     });
+
+    describe('checkUidExists', function () {
+      beforeEach(function () {
+        account.set('uid', 'the-uid');
+
+        sinon.stub(fxaClient, 'checkAccountExists', function () {
+          return p();
+        });
+
+        return account.checkUidExists();
+      });
+
+      it('delegates to the fxaClient', function () {
+        assert.isTrue(fxaClient.checkAccountExists.calledWith('the-uid'));
+      });
+    });
   });
 });
