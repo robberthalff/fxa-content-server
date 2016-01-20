@@ -318,12 +318,12 @@ define(function (require, exports, module) {
 
     signUpError: function (err) {
       var self = this;
-      // Account already exists. No attempt is made at signing the
-      // user in directly, instead, point the user to the signin page
-      // where the entered email/password will be prefilled.
-      if (AuthErrors.is(err, 'ACCOUNT_ALREADY_EXISTS')) {
+      if (AuthErrors.is(err, 'INCORRECT_PASSWORD')) {
+        // Account already exists, sign-in was attempted but password was wrong.
         return self._suggestSignIn(err);
-      } else if (AuthErrors.is(err, 'USER_CANCELED_LOGIN')) {
+      }
+
+      if (AuthErrors.is(err, 'USER_CANCELED_LOGIN')) {
         self.logEvent('login.canceled');
         // if user canceled login, just stop
         return;
