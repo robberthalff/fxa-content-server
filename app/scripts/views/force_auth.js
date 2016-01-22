@@ -14,6 +14,9 @@ define(function (require, exports, module) {
   var PasswordResetMixin = require('views/mixins/password-reset-mixin');
   var Session = require('lib/session');
   var SignedInNotificationMixin = require('views/mixins/signed-in-notification-mixin');
+  var SignInSuccessMixin = require('views/mixins/signin-success-mixin')(
+    { clearQueryParams: true }, 'afterForceAuth'
+  );
   var SignInView = require('views/sign_in');
   var Template = require('stache!templates/force_auth');
 
@@ -85,17 +88,6 @@ define(function (require, exports, module) {
       }
     },
 
-    onSignInSuccess: function (account) {
-      var self = this;
-      self.logViewEvent('success');
-      return self.invokeBrokerMethod('afterForceAuth', account)
-        .then(function () {
-          self.navigate(self._redirectTo || 'settings', {}, {
-            clearQueryParams: true
-          });
-        });
-    },
-
     resetPasswordNow: allowOnlyOneSubmit(function () {
       var self = this;
       var email = self.relier.get('email');
@@ -121,10 +113,15 @@ define(function (require, exports, module) {
     }
   });
 
+  // HACK: Clobber sign_in's onSignInSuccess and mix-in our own, tailored version
+  //       (which invokes the auth broker correctly) in it's place.
+  View.prototype.onSignInSuccess = undefined;
+
   Cocktail.mixin(
     View,
     PasswordMixin,
     PasswordResetMixin,
+    SignInSuccessMixin,
     SignedInNotificationMixin
   );
 

@@ -10,6 +10,7 @@ define(function (require, exports, module) {
   var FormView = require('views/form');
   var p = require('lib/promise');
   var ServiceMixin = require('views/mixins/service-mixin');
+  var SignInSuccessMixin = require('views/mixins/signin-success-mixin')();
   var SignupSuccessMixin = require('views/mixins/signup-success-mixin');
   var Template = require('stache!templates/permissions');
 
@@ -65,15 +66,6 @@ define(function (require, exports, module) {
       });
     },
 
-    onSignInSuccess: function (account) {
-      var self = this;
-      self.logViewEvent('success');
-      return self.invokeBrokerMethod('afterSignIn', account)
-        .then(function () {
-          self.navigate('settings');
-        });
-    },
-
     onSignInUnverified: function (account) {
       this.navigate('confirm', {
         account: account
@@ -94,6 +86,7 @@ define(function (require, exports, module) {
     View,
     BackMixin,
     ServiceMixin,
+    SignInSuccessMixin,
     SignupSuccessMixin
   );
 

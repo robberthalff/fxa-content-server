@@ -8,6 +8,7 @@ define(function (require, exports, module) {
   'use strict';
 
   var t = require('views/base').t;
+  var Constants = require('lib/constants');
 
   module.exports = {
     onSignUpSuccess: function (account) {
@@ -26,7 +27,7 @@ define(function (require, exports, module) {
         // https://github.com/mozilla/fxa-content-server/issues/2778
         return self.navigate('settings', {
           // TODO: Run this past rfeeley, do we want to show the user a message?
-          success: t('Account already exists, we signed you in instead!')
+          success: t(Constants.SIGN_UP_EXISTING_USER_SUCCESS)
         });
       } else {
         self.navigate('confirm', {

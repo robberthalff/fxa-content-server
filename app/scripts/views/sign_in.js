@@ -20,6 +20,7 @@ define(function (require, exports, module) {
   var Session = require('lib/session');
   var showProgressIndicator = require('views/decorators/progress_indicator');
   var SignedInNotificationMixin = require('views/mixins/signed-in-notification-mixin');
+  var SignInSuccessMixin = require('views/mixins/signin-success-mixin')();
   var SignInTemplate = require('stache!templates/sign_in');
   var SignupDisabledMixin = require('views/mixins/signup-disabled-mixin');
 
@@ -163,15 +164,6 @@ define(function (require, exports, module) {
       throw err;
     },
 
-    onSignInSuccess: function (account) {
-      var self = this;
-      self.logViewEvent('success');
-      return self.invokeBrokerMethod('afterSignIn', account)
-        .then(function () {
-          self.navigate(self.model.get('redirectTo') || 'settings');
-        });
-    },
-
     onSignInUnverified: function (account) {
       this.navigate('confirm', {
         account: account
@@ -298,6 +290,7 @@ define(function (require, exports, module) {
     ResumeTokenMixin,
     ServiceMixin,
     SignedInNotificationMixin,
+    SignInSuccessMixin,
     SignupDisabledMixin
   );
 
