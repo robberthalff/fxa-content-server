@@ -263,9 +263,13 @@ define(function (require, exports, module) {
             // https://github.com/mozilla/fxa-content-server/issues/2778
             return self._initAccount('signIn')
               .fail(function (err) {
-                self.notifier.trigger('signup.tooyoung');
+                if (self._coppa.hasValue()) {
+                  self.notifier.trigger('signup.tooyoung');
+                  return self._cannotCreateAccount();
+                }
 
-                return self._cannotCreateAccount();
+                // TODO: confirm error text with rfeeley
+                self.displayError(t('You must enter your age to sign up'));
               });
           }
           self.notifier.trigger('signup.submit');
