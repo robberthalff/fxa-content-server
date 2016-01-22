@@ -64,6 +64,9 @@ module.exports = function (grunt) {
     // update the sourcemap path to match the hosted files
     'sourcemap-source',
 
-    'htmlmin',
+    'cdn:dist',
+    'cdn:pages',
+
+    'htmlmin'
   ]);
 };
