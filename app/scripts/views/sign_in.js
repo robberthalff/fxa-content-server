@@ -22,7 +22,7 @@ define(function (require, exports, module) {
   var SignedInNotificationMixin = require('views/mixins/signed-in-notification-mixin');
   var SignInSuccessMixin = require('views/mixins/signin-success-mixin')();
   var SignInTemplate = require('stache!templates/sign_in');
-  var SignupDisabledMixin = require('views/mixins/signup-disabled-mixin');
+  var SignUpDisabledMixin = require('views/mixins/signup-disabled-mixin');
 
   var t = BaseView.t;
 
@@ -291,7 +291,7 @@ define(function (require, exports, module) {
     ServiceMixin,
     SignedInNotificationMixin,
     SignInSuccessMixin,
-    SignupDisabledMixin
+    SignUpDisabledMixin
   );
 
   module.exports = View;

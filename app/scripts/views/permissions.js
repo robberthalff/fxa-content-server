@@ -11,7 +11,7 @@ define(function (require, exports, module) {
   var p = require('lib/promise');
   var ServiceMixin = require('views/mixins/service-mixin');
   var SignInSuccessMixin = require('views/mixins/signin-success-mixin')();
-  var SignupSuccessMixin = require('views/mixins/signup-success-mixin');
+  var SignUpSuccessMixin = require('views/mixins/signup-success-mixin');
   var Template = require('stache!templates/permissions');
 
   var View = FormView.extend({
@@ -87,7 +87,7 @@ define(function (require, exports, module) {
     BackMixin,
     ServiceMixin,
     SignInSuccessMixin,
-    SignupSuccessMixin
+    SignUpSuccessMixin
   );
 
   module.exports = View;

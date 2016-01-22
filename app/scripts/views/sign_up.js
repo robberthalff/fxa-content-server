@@ -25,8 +25,8 @@ define(function (require, exports, module) {
     // TODO: Run this past rfeeley, do we want to show the user a message?
     { success: t(Constants.SIGN_UP_EXISTING_USER_SUCCESS) }
   );
-  var SignupDisabledMixin = require('views/mixins/signup-disabled-mixin');
-  var SignupSuccessMixin = require('views/mixins/signup-success-mixin');
+  var SignUpDisabledMixin = require('views/mixins/signup-disabled-mixin');
+  var SignUpSuccessMixin = require('views/mixins/signup-success-mixin');
   var Template = require('stache!templates/sign_up');
 
   function selectAutoFocusEl(bouncedEmail, email, password) {
@@ -388,8 +388,8 @@ define(function (require, exports, module) {
     ServiceMixin,
     SignedInNotificationMixin,
     SignInSuccessMixin,
-    SignupDisabledMixin,
-    SignupSuccessMixin
+    SignUpDisabledMixin,
+    SignUpSuccessMixin
   );
 
   module.exports = View;
