@@ -86,6 +86,16 @@ ul.links {
 }
 
 .choose-what-to-sync-row {
+  &:active{
+    .fxa-checkbox__box-outline{
+      border: 2px solid $checkbox-border-color;
+
+      .fxa-checkbox__tick-outline{
+        background: url("/images/tick.svg");
+        background-size: cover;
+      }
+    }
+  }
 
   label {
     display: block;
@@ -95,6 +105,7 @@ ul.links {
       // The default is 0px, but -3px sets the label
       // properly in comparison to the checkbox.
       margin-top: -3px;
+      line-height: 16px;
     }
   }
 }
