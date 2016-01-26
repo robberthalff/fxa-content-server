@@ -4,12 +4,10 @@
 define(function (require, exports, module) {
   'use strict';
 
-  var t = require('views/base').t;
-
   var AuthErrors = require('lib/auth-errors');
+  var BaseView = require('views/base');
   var CheckboxMixin = require('views/mixins/checkbox-mixin');
   var Cocktail = require('cocktail');
-  var Constants = require('lib/constants');
   var CoppaAgeInput = require('views/coppa/coppa-age-input');
   var ExperimentMixin = require('views/mixins/experiment-mixin');
   var FormView = require('views/form');
@@ -21,13 +19,12 @@ define(function (require, exports, module) {
   var ResumeTokenMixin = require('views/mixins/resume-token-mixin');
   var ServiceMixin = require('views/mixins/service-mixin');
   var SignedInNotificationMixin = require('views/mixins/signed-in-notification-mixin');
-  var SignInSuccessMixin = require('views/mixins/signin-success-mixin')(
-    // TODO: Run this past rfeeley, do we want to show the user a message?
-    { success: t(Constants.SIGN_UP_EXISTING_USER_SUCCESS) }
-  );
+  var SignInSuccessMixin = require('views/mixins/signin-success-mixin')();
   var SignUpDisabledMixin = require('views/mixins/signup-disabled-mixin');
   var SignUpSuccessMixin = require('views/mixins/signup-success-mixin');
   var Template = require('stache!templates/sign_up');
+
+  var t = BaseView.t;
 
   function selectAutoFocusEl(bouncedEmail, email, password) {
     if (bouncedEmail) {
@@ -40,43 +37,21 @@ define(function (require, exports, module) {
     return null;
   }
 
-  var actions = {
-    signIn: function (account, password) {
-      var self = this;
-      return this.user.signInAccount(account, password, this.relier, {
-        resume: this.getStringifiedResumeToken()
-      })
-      .then(function (account) {
-        actions.after.call(self);
-        return self.invokeBrokerMethod('afterSignIn', account);
-      })
-      .then(this.onSignInSuccess.bind(this, account));
-    },
+  function signIn (account, password) {
+    return this.user.signInAccount(account, password, this.relier, {
+      resume: this.getStringifiedResumeToken()
+    })
+    .then(this.onSignInSuccess.bind(this, account));
+  }
 
-    signUp: function (account, password, preVerifyToken) {
-      var self = this;
-      return this.user.signUpAccount(account, password, this.relier, {
-        resume: this.getStringifiedResumeToken()
-      })
-      .then(function (account) {
-        actions.after.call(self);
-        if (preVerifyToken && account.get('verified')) {
-          self.logViewEvent('preverified.success');
-        }
-        return self.invokeBrokerMethod('afterSignUp', account);
-      })
-      .then(this.onSignUpSuccess.bind(this, account))
-      .fail(this.signUpError.bind(this));
-    },
-
-    after: function () {
-      // formPrefill information is no longer needed after the user
-      // has successfully signed up. Clear the info to ensure
-      // passwords aren't sticking around in memory.
-      this._formPrefill.clear();
-      this.logViewEvent('success');
-    }
-  };
+  function signUp (account, password, preVerifyToken) {
+    return this.user.signUpAccount(account, password, this.relier, {
+      resume: this.getStringifiedResumeToken()
+    })
+    .then(this.invokeBrokerMethod.bind(this, 'afterSignUp'))
+    .then(this.onSignUpSuccess.bind(this, account))
+    .fail(this.signUpError.bind(this));
+  }
 
   var View = FormView.extend({
     template: Template,
@@ -256,25 +231,24 @@ define(function (require, exports, module) {
       var self = this;
       return p()
         .then(function () {
-          if (! self._isUserOldEnough()) {
-            // COPPA is not valid, but maybe this is an existing user
-            // that wants to sign in. Let them try to sign in then, if
-            // that fails, come back here and show the COPPA error.
-            // https://github.com/mozilla/fxa-content-server/issues/2778
-            return self._initAccount('signIn')
-              .fail(function (err) {
-                if (self._coppa.hasValue()) {
-                  self.notifier.trigger('signup.tooyoung');
-                  return self._cannotCreateAccount();
-                }
-
-                // TODO: confirm error text with rfeeley
-                self.displayError(t('You must enter your age to sign up'));
-              });
+          if (self._isUserOldEnough()) {
+            self.notifier.trigger('signup.submit');
+            return self._initAccount(signUp);
           }
-          self.notifier.trigger('signup.submit');
 
-          return self._initAccount('signUp');
+          // COPPA is not valid, but maybe this is an existing user
+          // that wants to sign in. Let them try to sign in then, if
+          // that fails, come back here and show the COPPA error.
+          // https://github.com/mozilla/fxa-content-server/issues/2778
+          return self._initAccount(signIn)
+            .fail(function (err) {
+              if (self._coppa.hasValue()) {
+                self.notifier.trigger('signup.tooyoung');
+                return self._cannotCreateAccount();
+              }
+
+              self.displayError(t('You must enter your age to sign up'));
+            });
         });
     },
 
@@ -345,7 +319,7 @@ define(function (require, exports, module) {
       }
 
       return self.invokeBrokerMethod('beforeSignIn', account.get('email'))
-        .then(actions[action].bind(self, account, password, preVerifyToken));
+        .then(action.bind(self, account, password, preVerifyToken));
     },
 
     signUpError: function (err) {
@@ -353,9 +327,7 @@ define(function (require, exports, module) {
       if (AuthErrors.is(err, 'INCORRECT_PASSWORD')) {
         // Account already exists, sign-in was attempted but password was wrong.
         return self._suggestSignIn(err);
-      }
-
-      if (AuthErrors.is(err, 'USER_CANCELED_LOGIN')) {
+      } else if (AuthErrors.is(err, 'USER_CANCELED_LOGIN')) {
         self.logEvent('login.canceled');
         // if user canceled login, just stop
         return;

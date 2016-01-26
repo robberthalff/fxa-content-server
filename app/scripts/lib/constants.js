@@ -84,10 +84,7 @@ define(function (require, exports, module) {
     ACCESS_TYPE_ONLINE: 'online',
     ACCESS_TYPE_OFFLINE: 'offline',
 
-    DEFAULT_XHR_TIMEOUT_MS: 2500,
-
-    // TODO: Run this past rfeeley, do we want to show the user a message?
-    SIGN_UP_EXISTING_USER_SUCCESS: 'Account already exists, we signed you in instead!'
+    DEFAULT_XHR_TIMEOUT_MS: 2500
   };
   /*eslint-enable sorting/sort-object-props*/
 });

@@ -7,28 +7,27 @@
 define(function (require, exports, module) {
   'use strict';
 
-  var t = require('views/base').t;
-  var Constants = require('lib/constants');
-
   module.exports = {
     onSignUpSuccess: function (account) {
+      this.logViewEvent('success');
+      if (this._formPrefill) {
+        this._formPrefill.clear();
+      }
       var self = this;
       if (account.get('verified')) {
-        if (self.relier.get('preVerifyToken')) {
-          // User was pre-verified, notify the broker.
-          return self.invokeBrokerMethod('afterSignIn', account)
-            .then(function () {
-              self.navigate('signup_complete');
-            });
-        }
+        return self.invokeBrokerMethod('afterSignIn', account)
+          .then(function () {
+            if (self.relier.has('preVerifyToken')) {
+              // User was pre-verified.
+              self.logViewEvent('preverified.success');
+              return self.navigate('signup_complete');
+            }
 
-        // Account already existed. There was no need to create it,
-        // so we just signed the user in instead.
-        // https://github.com/mozilla/fxa-content-server/issues/2778
-        return self.navigate('settings', {
-          // TODO: Run this past rfeeley, do we want to show the user a message?
-          success: t(Constants.SIGN_UP_EXISTING_USER_SUCCESS)
-        });
+            // Account already existed. There was no need to create it,
+            // so we just signed the user in instead.
+            // https://github.com/mozilla/fxa-content-server/issues/2778
+            return self.navigate('settings');
+          });
       } else {
         self.navigate('confirm', {
           account: account

@@ -15,7 +15,7 @@ define(function (require, exports, module) {
   var Session = require('lib/session');
   var SignedInNotificationMixin = require('views/mixins/signed-in-notification-mixin');
   var SignInSuccessMixin = require('views/mixins/signin-success-mixin')(
-    { clearQueryParams: true }, 'afterForceAuth'
+    'afterForceAuth', { clearQueryParams: true }
   );
   var SignInView = require('views/sign_in');
   var Template = require('stache!templates/force_auth');

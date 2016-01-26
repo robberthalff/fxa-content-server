@@ -13,7 +13,7 @@ define(function (require, exports, module) {
   var Template = require('stache!templates/partial/coppa-age-input');
 
   var CUTOFF_AGE = 13;
-  var ELEMENT = '#age';
+  var AGE_ELEMENT = '#age';
 
   var View = FormView.extend({
 
@@ -47,12 +47,12 @@ define(function (require, exports, module) {
      * @return {Boolean} true if the element has text, false otherwise.
      * */
     hasValue: function () {
-      return this.$(ELEMENT).val();
+      return !! this.getElementValue(AGE_ELEMENT);
     },
 
     onInput: function () {
       // limit age to only 3 characters
-      var age = this.$(ELEMENT);
+      var age = this.$(AGE_ELEMENT);
       age.val(age.val().substr(0, 3));
     },
 
@@ -67,7 +67,7 @@ define(function (require, exports, module) {
      */
     showValidationErrorsEnd: function () {
       if (! this._validateAge()) {
-        this.showValidationError(ELEMENT, AuthErrors.toError('AGE_REQUIRED'));
+        this.showValidationError(AGE_ELEMENT, AuthErrors.toError('AGE_REQUIRED'));
       }
     },
 
@@ -91,20 +91,20 @@ define(function (require, exports, module) {
     },
 
     _getAge: function () {
-      return parseInt(this.$(ELEMENT).val(), 10);
+      return parseInt(this.$(AGE_ELEMENT).val(), 10);
     },
 
     _selectPrefillAge: function (context) {
       var prefillYear = this._formPrefill.get(context);
       if (prefillYear) {
-        var ageEl = this.$(ELEMENT);
+        var ageEl = this.$(AGE_ELEMENT);
         ageEl.val(prefillYear);
         this.showFloatingPlaceholder(ageEl);
       }
     },
 
     beforeDestroy: function () {
-      this._formPrefill.set('age', this.$(ELEMENT).val());
+      this._formPrefill.set('age', this.$(AGE_ELEMENT).val());
     }
   });
 
