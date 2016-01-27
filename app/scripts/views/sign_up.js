@@ -50,7 +50,7 @@ define(function (require, exports, module) {
     })
     .then(this.invokeBrokerMethod.bind(this, 'afterSignUp'))
     .then(this.onSignUpSuccess.bind(this, account))
-    .fail(this.signUpError.bind(this));
+    .fail(this.onSignUpError.bind(this));
   }
 
   var View = FormView.extend({
@@ -322,7 +322,7 @@ define(function (require, exports, module) {
         .then(action.bind(self, account, password, preVerifyToken));
     },
 
-    signUpError: function (err) {
+    onSignUpError: function (err) {
       var self = this;
       if (AuthErrors.is(err, 'INCORRECT_PASSWORD')) {
         // Account already exists, sign-in was attempted but password was wrong.
