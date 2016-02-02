@@ -15,6 +15,7 @@ define(function (require, exports, module) {
   var Relier = require('models/reliers/relier');
   var RelierKeys = require('lib/relier-keys');
   var Url = require('lib/url');
+  var Validate = require('lib/validate');
 
   var RELIER_FIELDS_IN_RESUME_TOKEN = ['state', 'verificationRedirect'];
   // We only grant permissions that our UI currently prompts for. Others
@@ -130,6 +131,12 @@ define(function (require, exports, module) {
         err.param = 'client_id';
         throw err;
       }
+
+      if (self.has('redirectUri') && !Validate.isUrlValid(self.get('redirectUri'))) {
+        var err = OAuthErrors.toError('INVALID_PARAMETER');
+        err.param = 'redirect_uri';
+        throw err;
+      }
     },
 
     _setupSigninSignupFlow: function () {
@@ -140,10 +147,10 @@ define(function (require, exports, module) {
       self._importRequiredSearchParam('client_id', 'clientId');
       self._importRequiredSearchParam('scope', 'scope');
       self.importSearchParam('state');
-      self.importSearchParam('redirect_uri', 'redirectUri');
+      self._importValidateOptionalSearchParam('redirect_uri', 'redirectUri', Validate.isUrlValid);
       self.importSearchParam('access_type', 'accessType');
-      self.importSearchParam('redirectTo');
-      self.importSearchParam('verification_redirect', 'verificationRedirect');
+      self._importValidateOptionalSearchParam('redirectTo', 'redirectTo', Validate.isUrlValid);
+      self._importValidateOptionalSearchParam('verification_redirect', 'verificationRedirect', Validate.isUrlValid);
       self.importBooleanSearchParam('keys');
     },
 
@@ -154,6 +161,21 @@ define(function (require, exports, module) {
         var err = OAuthErrors.toError('MISSING_PARAMETER');
         err.param = sourceName;
         throw err;
+      }
+    },
+
+    _importValidateOptionalSearchParam: function(sourceName, destName, validateFunc){
+      var self = this;
+      var sourceValue = self.getSearchParam(sourceName);
+      // Only validate if param is in window.location
+      if (sourceValue){
+        if (validateFunc(sourceValue)){
+          self.importSearchParam(sourceName, destName);
+        } else {
+          var err = OAuthErrors.toError('INVALID_PARAMETER');
+          err.param = sourceName;
+          throw err;
+        }
       }
     },
 

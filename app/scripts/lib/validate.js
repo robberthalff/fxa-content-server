@@ -13,6 +13,9 @@ define(function (require, exports, module) {
   // taken from the fxa-auth-server
   var HEX_STRING = /^(?:[a-fA-F0-9]{2})+$/;
 
+  // URL RegEx taken from http://blog.mattheworiordan.com/post/13174566389/url-regular-expression-for-links-with-or-without
+  var urlRegEx = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/;
+
   module.exports = {
     /**
      * Check if an email address is valid
@@ -146,6 +149,15 @@ define(function (require, exports, module) {
       return _.all(_.keys(data), function (key) {
         return isDataValid(data[key], schema[key]);
       });
+    },
+
+    /**
+     * Check whether string is a url. Validates url with or without http(s) and trailing slash.
+     *
+     * http://blog.mattheworiordan.com/post/13174566389/url-regular-expression-for-links-with-or-without
+     */
+    isUrlValid: function isUrlValid (url){
+      return urlRegEx.test(url);
     }
   };
 });

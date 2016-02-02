@@ -19,6 +19,7 @@ define(function (require, exports, module) {
   var p = require('lib/promise');
   var ResumeTokenMixin = require('models/mixins/resume-token');
   var SearchParamMixin = require('models/mixins/search-param');
+  var Validate = require('lib/validate');
 
   var RELIER_FIELDS_IN_RESUME_TOKEN = [
     'utmTerm',
@@ -96,11 +97,15 @@ define(function (require, exports, module) {
 
           // A relier can indicate they do not want to allow
           // cached credentials if they set email === 'blank'
-          if (self.getSearchParam('email') ===
-              Constants.DISALLOW_CACHED_CREDENTIALS) {
+          var email = self.getSearchParam('email');
+          if (email === Constants.DISALLOW_CACHED_CREDENTIALS) {
             self.set('allowCachedCredentials', false);
-          } else {
-            self.importSearchParam('email');
+          } else if (email){
+            if (Validate.isEmailValid(email)) {
+              self.importSearchParam('email');
+            } else {
+              throw new TypeError(email + ' must be a valid email');
+            }
           }
         });
     },

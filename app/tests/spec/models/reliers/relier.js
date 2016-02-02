@@ -20,7 +20,7 @@ define(function (require, exports, module) {
 
     var SERVICE = 'service';
     var PREVERIFY_TOKEN = 'abigtoken';
-    var EMAIL = 'email';
+    var EMAIL = 'email@moz.org';
     var UID = 'uid';
     var ENTRYPOINT = 'preferences';
     var CAMPAIGN = 'fennec';
@@ -175,6 +175,19 @@ define(function (require, exports, module) {
             // the email should not be set on the relier model
             // if the specified email === blank
             assert.isFalse(relier.has('email'));
+          });
+      });
+
+      it('throw if `email` is invalid', function () {
+        windowMock.location.search = TestHelpers.toSearchString({
+          email: 'notanemail'
+        });
+       return relier.fetch()
+          .then(function () {
+            assert.fail();
+          }, function(err){
+            assert.ok(err);
+            assert.equal(err.message, 'notanemail must be a valid email');
           });
       });
     });
