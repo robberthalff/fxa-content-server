@@ -242,21 +242,21 @@ define(function (require, exports, module) {
       /*eslint-enable sorting/sort-object-props */
     });
 
-    describe('isUrlValid', function(){
-      it('is defined', function(){
+    describe('isUrlValid', function () {
+      it('is defined', function () {
         assert.isFunction(Validate.isUrlValid);
       });
 
       var invalidURLs = ['', {}, true, 1, 'asdf', 'http:://invalid.url'];
-      invalidURLs.forEach(function(item){
-        it('returns false for ' + item, function(){
+      invalidURLs.forEach( function (item) {
+        it('returns false for ' + item, function () {
           assert.isFalse(Validate.isUrlValid(item));
         });
       });
 
-      var validURLs = ['http://imgur.com/gallery/OeEaX', 'https://bugzilla.mozilla.org/', 'https://ex.am.ple/path'];
-      validURLs.forEach(function(item){
-        it('returns true for ' + item, function(){
+      var validURLs = ['http://imgur.com/gallery/OeEaX', 'https://bugzilla.mozilla.org/', 'https://ex.am.ple/path', 'www.firefox.com'];
+      validURLs.forEach( function (item) {
+        it('returns true for ' + item, function () {
           assert.isTrue(Validate.isUrlValid(item));
         });
       });

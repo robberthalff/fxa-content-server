@@ -182,10 +182,11 @@ define(function (require, exports, module) {
         windowMock.location.search = TestHelpers.toSearchString({
           email: 'notanemail'
         });
-       return relier.fetch()
+
+        return relier.fetch()
           .then(function () {
             assert.fail();
-          }, function(err){
+          }, function (err) {
             assert.ok(err);
             assert.equal(err.message, 'notanemail must be a valid email');
           });

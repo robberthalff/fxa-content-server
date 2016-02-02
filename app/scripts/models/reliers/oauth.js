@@ -126,14 +126,13 @@ define(function (require, exports, module) {
         state: resumeObj.state
       });
 
+      var err;
       if (! self.has('clientId')) {
-        var err = OAuthErrors.toError('MISSING_PARAMETER');
+        err = OAuthErrors.toError('MISSING_PARAMETER');
         err.param = 'client_id';
         throw err;
-      }
-
-      if (self.has('redirectUri') && !Validate.isUrlValid(self.get('redirectUri'))) {
-        var err = OAuthErrors.toError('INVALID_PARAMETER');
+      } else if (self.has('redirectUri') && ! (Validate.isUrlValid(self.get('redirectUri')))) {
+        err = OAuthErrors.toError('INVALID_PARAMETER');
         err.param = 'redirect_uri';
         throw err;
       }
@@ -164,7 +163,7 @@ define(function (require, exports, module) {
       }
     },
 
-    _importValidateOptionalSearchParam: function(sourceName, destName, validateFunc){
+    _importValidateOptionalSearchParam: function (sourceName, destName, validateFunc){
       var self = this;
       var sourceValue = self.getSearchParam(sourceName);
       // Only validate if param is in window.location
