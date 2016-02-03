@@ -1,11 +1,9 @@
-FROM ubuntu:trusty
-
 FROM mhart/alpine-node:4
 
 RUN apk add --update --virtual build-dependencies \
     git make gcc g++ python
 
-VOLUMES ["/app/server/config" ]
+VOLUME ["/app/server/config" ]
 
 COPY app /app/app
 COPY grunttasks /app/grunttasks
